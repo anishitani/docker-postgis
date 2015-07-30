@@ -1,0 +1,4 @@
+---
+- hosts: localhost
+  roles:
+    - atoshio25.postgis
