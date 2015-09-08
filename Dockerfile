@@ -1,14 +1,20 @@
-FROM anishitani/docker-ansible
+FROM anishitani/docker-postgresql
 
 MAINTAINER André Nishitani <andre.nishitani@gmail.com>
 
-ADD postgis.yml /tmp/
+ENV PGIS_VERSION 2.1
 
-WORKDIR /tmp
+RUN /scripts/init_squid_cache.sh
 
-RUN ansible-galaxy install atoshio25.postgis && \
-	ansible-playbook -i "localhost," -c local postgis.yml
+USER root
 
-EXPOSE 5432
+RUN apt-get install -y postgresql-$PG_VERSION-postgis-$PGIS_VERSION \
+  && apt-get autoclean && apt-get --purge -y autoremove \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-CMD 'service postgresql start && /bin/bash'
+RUN /scripts/stop_squid_cache.sh
+
+USER postgres
+
+# Set the default command to run when starting the container
+CMD ["/scripts/start.sh"]
